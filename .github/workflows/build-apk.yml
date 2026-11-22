@@ -18,7 +18,7 @@ jobs:
 
       - name: Open school project
         run: |
-          archives=(school-admin-android-v1-source*.zip)
+          archives=(MOASASATI-v*-updated-source.zip)
           if [[ ${#archives[@]} -ne 1 || ! -f "${archives[0]}" ]]; then
             echo "Expected one school project ZIP in the repository."
             exit 1
