@@ -1,0 +1,50 @@
+name: Build School APK
+
+on:
+  push:
+    paths:
+      - ".github/workflows/build-apk.yml"
+      - "*.zip"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Open school project
+        run: |
+          archives=(school-admin-android-v1-source*.zip)
+          if [[ ${#archives[@]} -ne 1 || ! -f "${archives[0]}" ]]; then
+            echo "Expected one school project ZIP in the repository."
+            exit 1
+          fi
+          unzip -q "${archives[0]}" -d project
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK
+        run: sdkmanager "platforms;android-36" "build-tools;35.0.0" "build-tools;36.0.0"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.13"
+
+      - name: Build APK
+        working-directory: project/school-admin-android
+        run: gradle --no-daemon --console=plain :app:assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: School-APK
+          path: project/school-admin-android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
